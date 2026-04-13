@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WPanel - WhatsApp Müşteri İletişim Paneli</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen active">
+      <div class="login-container">
+        <div class="login-box">
+          <div class="login-logo">
+            <div class="logo-icon">📱</div>
+            <h1>WPanel</h1>
+            <p>WhatsApp Müşteri İletişim Paneli</p>
+          </div>
+          
+          <form id="login-form" class="login-form">
+            <div class="form-group">
+              <label>E-posta</label>
+              <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="login-email" placeholder="admin@wpanel.com" required>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Şifre</label>
+              <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="login-password" placeholder="••••••••" required>
+                <button type="button" class="toggle-password">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-sign-in-alt"></i> Giriş Yap
+            </button>
+          </form>
+          
+          <div class="login-footer">
+            <p>Varsayılan: admin@wpanel.com / admin123</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main App -->
+    <div id="main-screen" class="screen">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <div class="logo-icon">📱</div>
+            <div class="logo-text">
+              <span class="logo-title">WPanel</span>
+              <span class="logo-subtitle">Desktop v1.0</span>
+            </div>
+          </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <ul class="nav-list">
+            <li class="nav-item active" data-page="dashboard">
+              <a href="#" class="nav-link">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item" data-page="customers">
+              <a href="#" class="nav-link">
+                <i class="fas fa-users"></i>
+                <span>Müşteriler</span>
+              </a>
+            </li>
+            <li class="nav-item" data-page="campaigns">
+              <a href="#" class="nav-link">
+                <i class="fas fa-bullhorn"></i>
+                <span>Kampanyalar</span>
+              </a>
+            </li>
+            <li class="nav-item" data-page="templates">
+              <a href="#" class="nav-link">
+                <i class="fas fa-file-alt"></i>
+                <span>Şablonlar</span>
+              </a>
+            </li>
+            <li class="nav-item" data-page="settings">
+              <a href="#" class="nav-link">
+                <i class="fas fa-cog"></i>
+                <span>Ayarlar</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        
+        <div class="sidebar-footer">
+          <button id="logout-btn" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Çıkış Yap</span>
+          </button>
+        </div>
+      </aside>
+      
+      <!-- Main Content -->
+      <main class="main-content">
+        <header class="top-header">
+          <h1 id="page-title">Dashboard</h1>
+          <div class="header-actions">
+            <span id="user-name">Admin</span>
+          </div>
+        </header>
+        
+        <div id="content-area">
+          <!-- Content loaded dynamically -->
+        </div>
+      </main>
+    </div>
+  </div>
+  
+  <script src="js/app.js"></script>
+</body>
+</html>

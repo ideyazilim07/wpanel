@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  wpanel:
+    build: .
+    container_name: wpanel-desktop
+    ports:
+      - "3000:3000"
+      - "3002:3002"
+    volumes:
+      - ./data:/app/data
+      - ./.wwebjs_auth:/app/src/server/whatsapp-service/.wwebjs_auth
+    environment:
+      - NODE_ENV=production
+      - DB_PATH=/app/data/wpanel.db
+    restart: unless-stopped
+    stdin_open: true
+    tty: true

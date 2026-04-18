@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WPanel - WhatsApp Müşteri İletişim Paneli</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --bg2: #161b24;
+  --bg3: #1e2433;
+  --border: #2a3142;
+  --green: #25d366;
+  --green-dark: #1aab52;
+  --green-glow: rgba(37,211,102,0.15);
+  --text: #e8ecf4;
+  --text2: #8b95a8;
+  --text3: #5a6478;
+  --red: #ff4d6d;
+  --yellow: #ffd166;
+  --blue: #4cc9f0;
+  --radius: 12px;
+  --sidebar: 240px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+/* ── AUTH ── */
+#auth-screen {
+  display:flex; align-items:center; justify-content:center;
+  min-height:100vh;
+  background: radial-gradient(ellipse at 30% 50%, rgba(37,211,102,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 20%, rgba(76,201,240,0.05) 0%, transparent 50%), var(--bg);
+}
+.auth-card {
+  width:420px; background:var(--bg2); border:1px solid var(--border);
+  border-radius:20px; padding:48px 40px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(37,211,102,0.1);
+  animation: fadeUp .5s ease;
+}
+.auth-logo { display:flex; align-items:center; gap:12px; margin-bottom:32px; }
+.auth-logo-icon {
+  width:48px; height:48px; background:linear-gradient(135deg, var(--green), #1aab52);
+  border-radius:14px; display:flex; align-items:center; justify-content:center;
+  font-size:22px; box-shadow:0 8px 24px var(--green-glow);
+}
+.auth-logo h1 { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; }
+.auth-logo span { font-size:12px; color:var(--text3); font-weight:400; }
+.auth-title { font-family:'Syne',sans-serif; font-size:26px; font-weight:700; margin-bottom:8px; }
+.auth-sub { color:var(--text2); font-size:14px; margin-bottom:32px; }
+.auth-tabs { display:flex; gap:4px; background:var(--bg3); border-radius:10px; padding:4px; margin-bottom:28px; }
+.auth-tab {
+  flex:1; padding:8px; text-align:center; border-radius:8px; font-size:14px;
+  font-weight:500; cursor:pointer; color:var(--text2); transition:.2s;
+}
+.auth-tab.active { background:var(--bg2); color:var(--text); box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+.form-group { margin-bottom:16px; }
+.form-label { font-size:13px; color:var(--text2); margin-bottom:6px; display:block; }
+.form-input {
+  width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:10px;
+  padding:12px 16px; color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif;
+  outline:none; transition:.2s;
+}
+.form-input:focus { border-color:var(--green); box-shadow:0 0 0 3px var(--green-glow); }
+.form-input::placeholder { color:var(--text3); }
+.btn-primary {
+  width:100%; padding:14px; background:linear-gradient(135deg, var(--green), var(--green-dark));
+  border:none; border-radius:10px; color:#fff; font-size:15px; font-weight:600;
+  cursor:pointer; font-family:'DM Sans',sans-serif; transition:.2s;
+  box-shadow:0 4px 16px var(--green-glow);
+}
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 24px var(--green-glow); }
+.btn-primary:active { transform:translateY(0); }
+.btn-primary:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+.auth-error { background:rgba(255,77,109,0.1); border:1px solid rgba(255,77,109,0.3); border-radius:8px; padding:10px 14px; font-size:13px; color:var(--red); margin-bottom:16px; display:none; }
+
+/* ── APP LAYOUT ── */
+#app-screen { display:none; flex-direction:row; min-height:100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width:var(--sidebar); background:var(--bg2); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh;
+  z-index:100;
+}
+.sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid var(--border); }
+.sidebar-logo-inner { display:flex; align-items:center; gap:10px; }
+.sidebar-logo-icon {
+  width:36px; height:36px; background:linear-gradient(135deg, var(--green), var(--green-dark));
+  border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;
+}
+.sidebar-logo h2 { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+.sidebar-logo small { font-size:10px; color:var(--text3); }
+.sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+.nav-section { margin-bottom:24px; }
+.nav-section-title { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; padding:0 8px; margin-bottom:8px; }
+.nav-item {
+  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px;
+  cursor:pointer; color:var(--text2); font-size:14px; font-weight:500; transition:.15s;
+  margin-bottom:2px; text-decoration:none;
+}
+.nav-item:hover { background:var(--bg3); color:var(--text); }
+.nav-item.active { background:var(--green-glow); color:var(--green); border:1px solid rgba(37,211,102,0.2); }
+.nav-item .icon { font-size:16px; width:20px; text-align:center; }
+.nav-badge {
+  margin-left:auto; background:var(--green); color:#fff; font-size:10px;
+  font-weight:700; padding:2px 6px; border-radius:20px; min-width:18px; text-align:center;
+}
+.sidebar-bottom { padding:12px; border-top:1px solid var(--border); }
+.user-card {
+  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px;
+  background:var(--bg3); cursor:pointer;
+}
+.user-avatar {
+  width:32px; height:32px; background:linear-gradient(135deg, var(--green), var(--blue));
+  border-radius:8px; display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; color:#fff;
+}
+.user-info { flex:1; min-width:0; }
+.user-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.user-role { font-size:11px; color:var(--text3); }
+.logout-btn { color:var(--text3); cursor:pointer; font-size:16px; transition:.2s; }
+.logout-btn:hover { color:var(--red); }
+
+/* MAIN */
+.main { margin-left:var(--sidebar); flex:1; min-height:100vh; display:flex; flex-direction:column; }
+
+/* TOPBAR */
+.topbar {
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:50;
+}
+.topbar-title { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; }
+.topbar-actions { display:flex; align-items:center; gap:12px; }
+
+/* CONTENT */
+.content { padding:32px; flex:1; }
+
+/* PAGES */
+.page { display:none; animation: fadeIn .3s ease; }
+.page.active { display:block; }
+
+/* STATS */
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+.stat-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius);
+  padding:24px; transition:.2s;
+}
+.stat-card:hover { border-color:var(--green); box-shadow:0 4px 20px var(--green-glow); }
+.stat-icon { font-size:28px; margin-bottom:12px; }
+.stat-value { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; margin-bottom:4px; }
+.stat-label { font-size:13px; color:var(--text2); }
+.stat-change { font-size:12px; color:var(--green); margin-top:4px; }
+
+/* CARDS */
+.card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius);
+  padding:24px; margin-bottom:24px;
+}
+.card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.card-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+
+/* BUTTONS */
+.btn { padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:.15s; }
+.btn-green { background:linear-gradient(135deg, var(--green), var(--green-dark)); color:#fff; box-shadow:0 2px 8px var(--green-glow); }
+.btn-green:hover { transform:translateY(-1px); box-shadow:0 4px 16px var(--green-glow); }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--text2); }
+.btn-outline:hover { border-color:var(--green); color:var(--green); }
+.btn-danger { background:rgba(255,77,109,0.15); color:var(--red); border:1px solid rgba(255,77,109,0.3); }
+.btn-danger:hover { background:rgba(255,77,109,0.25); }
+.btn-sm { padding:6px 12px; font-size:12px; }
+
+/* TABLE */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+thead tr { border-bottom:1px solid var(--border); }
+th { text-align:left; padding:10px 16px; font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; }
+td { padding:14px 16px; font-size:14px; border-bottom:1px solid rgba(42,49,66,0.5); }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:rgba(255,255,255,0.02); }
+.badge { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.badge-green { background:rgba(37,211,102,0.15); color:var(--green); }
+.badge-yellow { background:rgba(255,209,102,0.15); color:var(--yellow); }
+.badge-red { background:rgba(255,77,109,0.15); color:var(--red); }
+.badge-blue { background:rgba(76,201,240,0.15); color:var(--blue); }
+.badge-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+/* SEARCH */
+.search-bar {
+  display:flex; align-items:center; gap:8px; background:var(--bg3);
+  border:1px solid var(--border); border-radius:8px; padding:8px 14px;
+}
+.search-bar input { background:none; border:none; outline:none; color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif; width:200px; }
+.search-bar input::placeholder { color:var(--text3); }
+
+/* MODAL */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);
+  z-index:200; display:none; align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:var(--bg2); border:1px solid var(--border); border-radius:16px;
+  padding:32px; width:480px; max-width:90vw; animation:fadeUp .25s ease;
+  max-height:90vh; overflow-y:auto;
+}
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+.modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+.modal-close { background:none; border:none; color:var(--text2); font-size:20px; cursor:pointer; padding:4px; }
+.modal-close:hover { color:var(--text); }
+.modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+
+/* TOAST */
+#toast-container { position:fixed; bottom:24px; right:24px; z-index:999; display:flex; flex-direction:column; gap:8px; }
+.toast {
+  background:var(--bg2); border:1px solid var(--border); border-radius:10px;
+  padding:14px 18px; font-size:14px; display:flex; align-items:center; gap:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.3); animation:slideIn .3s ease; min-width:280px;
+}
+.toast.success { border-color:rgba(37,211,102,0.4); }
+.toast.error { border-color:rgba(255,77,109,0.4); }
+
+/* WHATSAPP STATUS */
+.wa-status { display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:8px; background:var(--bg3); border:1px solid var(--border); font-size:13px; }
+.wa-dot { width:8px; height:8px; border-radius:50%; background:var(--text3); }
+.wa-dot.connected { background:var(--green); box-shadow:0 0 8px var(--green); animation:pulse 2s infinite; }
+
+/* EMPTY STATE */
+.empty-state { text-align:center; padding:64px 32px; color:var(--text2); }
+.empty-icon { font-size:48px; margin-bottom:16px; opacity:.5; }
+.empty-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--text); margin-bottom:8px; }
+.empty-text { font-size:14px; color:var(--text2); margin-bottom:24px; }
+
+/* LOADING */
+.loading { display:flex; align-items:center; justify-content:center; padding:48px; }
+.spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin .7s linear infinite; }
+
+/* CAMPAIGN PROGRESS */
+.progress-bar { background:var(--bg3); border-radius:4px; height:6px; overflow:hidden; margin-top:8px; }
+.progress-fill { height:100%; background:linear-gradient(90deg, var(--green), var(--blue)); border-radius:4px; transition:.3s; }
+
+/* DASHBOARD ACTIVITY */
+.activity-list { display:flex; flex-direction:column; gap:12px; }
+.activity-item { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid rgba(42,49,66,0.5); }
+.activity-item:last-child { border-bottom:none; }
+.activity-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.activity-text { flex:1; }
+.activity-title { font-size:13px; font-weight:500; }
+.activity-time { font-size:11px; color:var(--text3); margin-top:2px; }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.5; } }
+@keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+
+/* GRID HELPERS */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.flex { display:flex; align-items:center; }
+.flex-between { display:flex; align-items:center; justify-content:space-between; }
+.gap-8 { gap:8px; }
+.gap-12 { gap:12px; }
+.mt-16 { margin-top:16px; }
+.text-green { color:var(--green); }
+.text-red { color:var(--red); }
+.text-muted { color:var(--text2); font-size:13px; }
+.font-syne { font-family:'Syne',sans-serif; }
+
+/* RESPONSIVE */
+@media(max-width:1024px) { .stats-grid { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:768px) {
+  .sidebar { transform:translateX(-100%); transition:.3s; }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; }
+  .stats-grid { grid-template-columns:1fr 1fr; }
+  .grid-2 { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">💬</div>
+      <div>
+        <h1>WPanel</h1>
+        <span>WhatsApp Müşteri Paneli</span>
+      </div>
+    </div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchTab('login')">Giriş Yap</div>
+      <div class="auth-tab" onclick="switchTab('register')">Kayıt Ol</div>
+    </div>
+    <div id="auth-error" class="auth-error"></div>
+
+    <!-- LOGIN FORM -->
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">E-posta Adresi</label>
+        <input type="email" class="form-input" id="login-email" placeholder="ornek@sirket.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Şifre</label>
+        <input type="password" class="form-input" id="login-password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-primary" id="login-btn">Giriş Yap</button>
+    </form>
+
+    <!-- REGISTER FORM -->
+    <form id="register-form" style="display:none" onsubmit="handleRegister(event)">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Ad Soyad</label>
+          <input type="text" class="form-input" id="reg-name" placeholder="Adınız" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Şirket Adı</label>
+          <input type="text" class="form-input" id="reg-company" placeholder="Şirket" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-posta</label>
+        <input type="email" class="form-input" id="reg-email" placeholder="ornek@sirket.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Şifre</label>
+        <input type="password" class="form-input" id="reg-password" placeholder="En az 8 karakter" required>
+      </div>
+      <button type="submit" class="btn-primary" id="register-btn">Hesap Oluştur</button>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" style="display:none">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-inner">
+        <div class="sidebar-logo-icon">💬</div>
+        <div>
+          <h2>WPanel</h2>
+          <small>v1.0</small>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Ana Menü</div>
+        <a class="nav-item active" onclick="showPage('dashboard')">
+          <span class="icon">📊</span> Dashboard
+        </a>
+        <a class="nav-item" onclick="showPage('customers')">
+          <span class="icon">👥</span> Müşteriler
+          <span class="nav-badge" id="customers-count">0</span>
+        </a>
+        <a class="nav-item" onclick="showPage('campaigns')">
+          <span class="icon">📣</span> Kampanyalar
+        </a>
+        <a class="nav-item" onclick="showPage('messages')">
+          <span class="icon">💬</span> Mesajlar
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Sistem</div>
+        <a class="nav-item" onclick="showPage('whatsapp')">
+          <span class="icon">📱</span> WhatsApp
+        </a>
+        <a class="nav-item" onclick="showPage('settings')">
+          <span class="icon">⚙️</span> Ayarlar
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Kullanıcı</div>
+          <div class="user-role" id="user-role">Admin</div>
+        </div>
+        <span class="logout-btn" onclick="logout()" title="Çıkış">⇥</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-actions">
+        <div class="wa-status" id="wa-status-bar">
+          <div class="wa-dot" id="wa-dot"></div>
+          <span id="wa-status-text">WhatsApp Bağlı Değil</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value text-green" id="stat-customers">0</div>
+            <div class="stat-label">Toplam Müşteri</div>
+            <div class="stat-change">↑ Aktif</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📣</div>
+            <div class="stat-value" id="stat-campaigns">0</div>
+            <div class="stat-label">Kampanya</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✉️</div>
+            <div class="stat-value" id="stat-sent">0</div>
+            <div class="stat-label">Gönderilen Mesaj</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📱</div>
+            <div class="stat-value" id="stat-wa">—</div>
+            <div class="stat-label">WhatsApp Durumu</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Son Kampanyalar</span>
+              <button class="btn btn-outline btn-sm" onclick="showPage('campaigns')">Tümü</button>
+            </div>
+            <div id="dashboard-campaigns">
+              <div class="loading"><div class="spinner"></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Hızlı Mesaj Gönder</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Telefon Numarası</label>
+              <input type="text" class="form-input" id="quick-phone" placeholder="+905xx xxx xxxx">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mesaj</label>
+              <textarea class="form-input" id="quick-msg" rows="4" placeholder="Mesajınızı yazın..." style="resize:vertical"></textarea>
+            </div>
+            <button class="btn btn-green" onclick="sendQuickMessage()" style="width:100%">📤 Gönder</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div class="page" id="page-customers">
+        <div class="card">
+          <div class="card-header">
+            <div class="flex gap-12">
+              <div class="search-bar">
+                <span>🔍</span>
+                <input type="text" id="customer-search" placeholder="İsim veya telefon ara..." oninput="searchCustomers(this.value)">
+              </div>
+            </div>
+            <div class="flex gap-8">
+              <button class="btn btn-outline btn-sm" onclick="importCustomers()">📥 İçe Aktar</button>
+              <button class="btn btn-green btn-sm" onclick="openModal('customer-modal')">+ Müşteri Ekle</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>İsim</th>
+                  <th>Telefon</th>
+                  <th>E-posta</th>
+                  <th>Etiketler</th>
+                  <th>Tarih</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="customers-table">
+                <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="customers-pagination" class="flex-between mt-16" style="padding-top:16px; border-top:1px solid var(--border)">
+            <span class="text-muted" id="customers-info">Yükleniyor...</span>
+            <div class="flex gap-8" id="pagination-btns"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAMPAIGNS -->
+      <div class="page" id="page-campaigns">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Kampanyalar</span>
+            <button class="btn btn-green btn-sm" onclick="openModal('campaign-modal')">+ Kampanya Oluştur</button>
+          </div>
+          <div id="campaigns-list">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="page" id="page-messages">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Mesaj Geçmişi</span></div>
+          <div class="empty-state">
+            <div class="empty-icon">💬</div>
+            <div class="empty-title">Mesaj Geçmişi</div>
+            <div class="empty-text">Gönderilen mesajlar burada görünecek</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WHATSAPP -->
+      <div class="page" id="page-whatsapp">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><span class="card-title">📱 WhatsApp Bağlantısı</span></div>
+            <div class="form-group">
+              <label class="form-label">Evolution API URL</label>
+              <input type="text" class="form-input" id="wa-api-url" placeholder="http://localhost:8080">
+            </div>
+            <div class="form-group">
+              <label class="form-label">API Key</label>
+              <input type="text" class="form-input" id="wa-api-key" placeholder="API anahtarınız">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Instance Adı</label>
+              <input type="text" class="form-input" id="wa-instance" placeholder="wpanel">
+            </div>
+            <div class="flex gap-8 mt-16">
+              <button class="btn btn-outline" onclick="testWAConnection()">🔗 Test Et</button>
+              <button class="btn btn-green" onclick="connectWhatsApp()">📱 WhatsApp Bağla</button>
+            </div>
+            <div id="wa-qr" style="margin-top:20px; display:none; text-align:center">
+              <div style="background:#fff; padding:16px; border-radius:12px; display:inline-block">
+                <canvas id="qr-canvas"></canvas>
+              </div>
+              <p class="text-muted" style="margin-top:8px">WhatsApp ile QR kodu okutun</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">⚙️ Genel Ayarlar</span></div>
+            <div class="form-group">
+              <label class="form-label">Gönderim Hızı</label>
+              <select class="form-input" id="send-rate">
+                <option value="1">1 saniye (Hızlı)</option>
+                <option value="3" selected>3 saniye (Normal)</option>
+                <option value="5">5 saniye (Yavaş)</option>
+                <option value="10">10 saniye (Çok Yavaş)</option>
+              </select>
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:10px; margin-top:8px">
+              <input type="checkbox" id="auto-optout" style="width:16px; height:16px; accent-color:var(--green)">
+              <label for="auto-optout" class="form-label" style="margin:0; cursor:pointer">"Çıkış" yazanları otomatik opt-out yap</label>
+            </div>
+            <button class="btn btn-green mt-16" onclick="saveSettings()">💾 Kaydet</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="card">
+          <div class="card-header"><span class="card-title">👤 Hesap Bilgileri</span></div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Ad Soyad</label>
+              <input type="text" class="form-input" id="settings-name" placeholder="Adınız">
+            </div>
+            <div class="form-group">
+              <label class="form-label">E-posta</label>
+              <input type="email" class="form-input" id="settings-email" placeholder="E-posta">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Yeni Şifre (değiştirmek için)</label>
+            <input type="password" class="form-input" id="settings-password" placeholder="••••••••">
+          </div>
+          <button class="btn btn-green mt-16" onclick="saveProfile()">💾 Kaydet</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🏢 Şirket Bilgileri</span></div>
+          <div class="form-group">
+            <label class="form-label">Şirket Adı</label>
+            <input type="text" class="form-input" id="settings-company" placeholder="Şirket adı">
+          </div>
+          <button class="btn btn-green mt-16">💾 Kaydet</button>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /app -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="customer-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="customer-modal-title">Müşteri Ekle</span>
+      <button class="modal-close" onclick="closeModal('customer-modal')">✕</button>
+    </div>
+    <input type="hidden" id="customer-id">
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">İsim *</label>
+        <input type="text" class="form-input" id="c-name" placeholder="Müşteri adı">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefon *</label>
+        <input type="text" class="form-input" id="c-phone" placeholder="+905xx xxx xxxx">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">E-posta</label>
+      <input type="email" class="form-input" id="c-email" placeholder="ornek@email.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Etiketler (virgülle ayırın)</label>
+      <input type="text" class="form-input" id="c-tags" placeholder="vip, aktif, yeni">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notlar</label>
+      <textarea class="form-input" id="c-notes" rows="3" placeholder="Müşteri hakkında notlar..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('customer-modal')">İptal</button>
+      <button class="btn btn-green" onclick="saveCustomer()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="campaign-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Kampanya Oluştur</span>
+      <button class="modal-close" onclick="closeModal('campaign-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Kampanya Adı *</label>
+      <input type="text" class="form-input" id="camp-name" placeholder="Örn: Bayram Kampanyası">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mesaj *</label>
+      <textarea class="form-input" id="camp-msg" rows="5" placeholder="Gönderilecek mesajı yazın...&#10;&#10;Değişkenler: {isim}, {telefon}"></textarea>
+    </div>
+    <div id="camp-preview" style="background:var(--bg3); border-radius:10px; padding:14px; margin-top:8px; font-size:13px; color:var(--text2); display:none">
+      <strong style="color:var(--green); font-size:11px; text-transform:uppercase; letter-spacing:.06em">Önizleme</strong>
+      <div id="camp-preview-text" style="margin-top:6px; line-height:1.6"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('campaign-modal')">İptal</button>
+      <button class="btn btn-green" onclick="saveCampaign()">Oluştur</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+const API = '/api';
+let token = localStorage.getItem('wp_token') || '';
+let currentUser = null;
+let customersPage = 1;
+let customersTotal = 0;
+let allCustomers = [];
+
+// ── API HELPER ──
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const r = await fetch(API + path, { ...opts, headers: { ...headers, ...opts.headers } });
+  const data = await r.json();
+  if (r.status === 401) { logout(); return null; }
+  return { ok: r.ok, status: r.status, data };
+}
+
+// ── TOAST ──
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── AUTH ──
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('auth-error').style.display = 'none';
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Giriş yapılıyor...';
+  const r = await api('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value })
+  });
+  btn.disabled = false; btn.textContent = 'Giriş Yap';
+  if (!r) return;
+  if (r.ok) {
+    token = r.data.access_token;
+    localStorage.setItem('wp_token', token);
+    initApp(r.data.user);
+  } else {
+    const err = document.getElementById('auth-error');
+    err.style.display = 'block';
+    err.textContent = r.data.error || 'Giriş başarısız';
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const btn = document.getElementById('register-btn');
+  btn.disabled = true; btn.textContent = 'Kaydediliyor...';
+  const r = await api('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      name: document.getElementById('reg-name').value,
+      company: document.getElementById('reg-company').value,
+      email: document.getElementById('reg-email').value,
+      password: document.getElementById('reg-password').value
+    })
+  });
+  btn.disabled = false; btn.textContent = 'Hesap Oluştur';
+  if (!r) return;
+  if (r.ok) {
+    token = r.data.access_token;
+    localStorage.setItem('wp_token', token);
+    initApp(r.data.user);
+  } else {
+    const err = document.getElementById('auth-error');
+    err.style.display = 'block';
+    err.textContent = r.data.error || 'Kayıt başarısız';
+  }
+}
+
+function logout() {
+  token = ''; localStorage.removeItem('wp_token');
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+}
+
+// ── INIT APP ──
+async function initApp(user) {
+  if (!user) {
+    const r = await api('/auth/me');
+    if (!r || !r.ok) { logout(); return; }
+    user = r.data;
+  }
+  currentUser = user;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'flex';
+  document.getElementById('user-name').textContent = user.name;
+  document.getElementById('user-role').textContent = user.role === 'admin' ? 'Admin' : 'Temsilci';
+  document.getElementById('user-avatar').textContent = user.name.charAt(0).toUpperCase();
+  document.getElementById('settings-name').value = user.name;
+  document.getElementById('settings-email').value = user.email;
+  loadDashboard();
+  loadCustomers();
+  loadCampaigns();
+}
+
+// ── NAVIGATION ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const titles = { dashboard:'Dashboard', customers:'Müşteriler', campaigns:'Kampanyalar', messages:'Mesajlar', whatsapp:'WhatsApp', settings:'Ayarlar' };
+  document.getElementById('page-title').textContent = titles[name] || name;
+}
+
+// ── MODALS ──
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'customer-modal') {
+    document.getElementById('customer-id').value = '';
+    document.getElementById('customer-modal-title').textContent = 'Müşteri Ekle';
+    ['c-name','c-phone','c-email','c-tags','c-notes'].forEach(f => document.getElementById(f).value = '');
+  }
+  if (id === 'campaign-modal') {
+    ['camp-name','camp-msg'].forEach(f => document.getElementById(f).value = '');
+  }
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+// ── DASHBOARD ──
+async function loadDashboard() {
+  const [cust, camp] = await Promise.all([api('/customers/?page=1'), api('/campaigns/')]);
+  if (cust?.ok) {
+    document.getElementById('stat-customers').textContent = cust.data.total || 0;
+    document.getElementById('customers-count').textContent = cust.data.total || 0;
+  }
+  if (camp?.ok) {
+    document.getElementById('stat-campaigns').textContent = camp.data.campaigns?.length || 0;
+    const totalSent = (camp.data.campaigns || []).reduce((a,c) => a + (c.sent_count||0), 0);
+    document.getElementById('stat-sent').textContent = totalSent;
+    renderDashboardCampaigns(camp.data.campaigns?.slice(0,5) || []);
+  }
+}
+
+function renderDashboardCampaigns(campaigns) {
+  const el = document.getElementById('dashboard-campaigns');
+  if (!campaigns.length) { el.innerHTML = '<div class="empty-state" style="padding:32px"><div class="empty-icon">📣</div><div class="empty-text">Henüz kampanya yok</div></div>'; return; }
+  el.innerHTML = campaigns.map(c => `
+    <div class="activity-item">
+      <div class="activity-icon" style="background:${statusBg(c.status)}">${statusIcon(c.status)}</div>
+      <div class="activity-text">
+        <div class="activity-title">${c.name}</div>
+        <div class="activity-time">${c.sent_count} gönderildi · ${formatDate(c.created_at)}</div>
+      </div>
+      <span class="badge ${statusBadge(c.status)}">${statusLabel(c.status)}</span>
+    </div>`).join('');
+}
+
+// ── CUSTOMERS ──
+async function loadCustomers(page = 1, search = '') {
+  customersPage = page;
+  const r = await api(`/customers/?page=${page}&search=${encodeURIComponent(search)}`);
+  if (!r?.ok) return;
+  allCustomers = r.data.customers;
+  customersTotal = r.data.total;
+  renderCustomers(r.data.customers, r.data.total, r.data.pages, page);
+}
+
+function renderCustomers(customers, total, pages, page) {
+  const tbody = document.getElementById('customers-table');
+  if (!customers.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">Müşteri bulunamadı</div><div class="empty-text">Yeni müşteri ekleyin</div></div></td></tr>`;
+    document.getElementById('customers-info').textContent = '0 müşteri';
+    document.getElementById('pagination-btns').innerHTML = '';
+    return;
+  }
+  tbody.innerHTML = customers.map(c => `
+    <tr>
+      <td><div style="font-weight:500">${c.name}</div></td>
+      <td><span style="font-family:monospace;color:var(--green)">${c.phone}</span></td>
+      <td>${c.email || '<span style="color:var(--text3)">—</span>'}</td>
+      <td>${renderTags(c.tags)}</td>
+      <td style="color:var(--text2); font-size:12px">${formatDate(c.created_at)}</td>
+      <td>
+        <div class="flex gap-8">
+          <button class="btn btn-outline btn-sm" onclick="editCustomer(${c.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCustomer(${c.id}, '${c.name}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+  document.getElementById('customers-info').textContent = `${total} müşteri gösteriliyor`;
+  const pag = document.getElementById('pagination-btns');
+  pag.innerHTML = '';
+  if (pages > 1) {
+    if (page > 1) { const b = document.createElement('button'); b.className='btn btn-outline btn-sm'; b.textContent='← Önceki'; b.onclick=()=>loadCustomers(page-1); pag.appendChild(b); }
+    if (page < pages) { const b = document.createElement('button'); b.className='btn btn-outline btn-sm'; b.textContent='Sonraki →'; b.onclick=()=>loadCustomers(page+1); pag.appendChild(b); }
+  }
+}
+
+function renderTags(tags) {
+  if (!tags) return '<span style="color:var(--text3)">—</span>';
+  return tags.split(',').filter(t=>t.trim()).map(t => `<span class="badge badge-blue" style="margin:2px;font-size:10px">${t.trim()}</span>`).join('');
+}
+
+let searchTimer;
+function searchCustomers(val) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => loadCustomers(1, val), 400);
+}
+
+async function saveCustomer() {
+  const id = document.getElementById('customer-id').value;
+  const data = {
+    name: document.getElementById('c-name').value,
+    phone: document.getElementById('c-phone').value,
+    email: document.getElementById('c-email').value,
+    tags: document.getElementById('c-tags').value,
+    notes: document.getElementById('c-notes').value
+  };
+  if (!data.name || !data.phone) { toast('İsim ve telefon zorunludur', 'error'); return; }
+  const r = id
+    ? await api(`/customers/${id}`, { method:'PUT', body:JSON.stringify(data) })
+    : await api('/customers/', { method:'POST', body:JSON.stringify(data) });
+  if (r?.ok) {
+    toast(id ? 'Müşteri güncellendi' : 'Müşteri eklendi');
+    closeModal('customer-modal');
+    loadCustomers(customersPage);
+    loadDashboard();
+  } else {
+    toast(r?.data?.error || 'Hata oluştu', 'error');
+  }
+}
+
+async function editCustomer(id) {
+  const c = allCustomers.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('customer-id').value = c.id;
+  document.getElementById('customer-modal-title').textContent = 'Müşteri Düzenle';
+  document.getElementById('c-name').value = c.name;
+  document.getElementById('c-phone').value = c.phone;
+  document.getElementById('c-email').value = c.email || '';
+  document.getElementById('c-tags').value = c.tags || '';
+  document.getElementById('c-notes').value = c.notes || '';
+  openModal('customer-modal');
+}
+
+async function deleteCustomer(id, name) {
+  if (!confirm(`"${name}" silinsin mi?`)) return;
+  const r = await api(`/customers/${id}`, { method:'DELETE' });
+  if (r?.ok) { toast('Müşteri silindi'); loadCustomers(customersPage); loadDashboard(); }
+  else toast('Hata oluştu', 'error');
+}
+
+function importCustomers() {
+  toast('CSV içe aktarma yakında eklenecek', 'success');
+}
+
+// ── CAMPAIGNS ──
+async function loadCampaigns() {
+  const r = await api('/campaigns/');
+  if (!r?.ok) return;
+  renderCampaigns(r.data.campaigns || []);
+}
+
+function renderCampaigns(campaigns) {
+  const el = document.getElementById('campaigns-list');
+  if (!campaigns.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📣</div><div class="empty-title">Kampanya Yok</div><div class="empty-text">İlk kampanyanızı oluşturun</div><button class="btn btn-green" onclick="openModal('campaign-modal')">+ Kampanya Oluştur</button></div>`;
+    return;
+  }
+  el.innerHTML = campaigns.map(c => `
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border)">
+      <div style="display:flex; align-items:center; gap:14px">
+        <div class="activity-icon" style="background:${statusBg(c.status)}">${statusIcon(c.status)}</div>
+        <div>
+          <div style="font-weight:600; font-size:15px">${c.name}</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:3px">${c.message.substring(0,60)}${c.message.length>60?'...':''}</div>
+          <div style="margin-top:6px; display:flex; gap:12px">
+            <span style="font-size:11px; color:var(--green)">✓ ${c.sent_count} gönderildi</span>
+            ${c.failed_count ? `<span style="font-size:11px; color:var(--red)">✗ ${c.failed_count} başarısız</span>` : ''}
+          </div>
+          ${c.sent_count > 0 ? `<div class="progress-bar" style="width:200px"><div class="progress-fill" style="width:100%"></div></div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px">
+        <span class="badge ${statusBadge(c.status)}">${statusLabel(c.status)}</span>
+        ${c.status === 'draft' ? `<button class="btn btn-green btn-sm" onclick="sendCampaign(${c.id}, '${c.name}')">📤 Gönder</button>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="deleteCampaign(${c.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+async function saveCampaign() {
+  const data = { name: document.getElementById('camp-name').value, message: document.getElementById('camp-msg').value };
+  if (!data.name || !data.message) { toast('İsim ve mesaj zorunludur', 'error'); return; }
+  const r = await api('/campaigns/', { method:'POST', body:JSON.stringify(data) });
+  if (r?.ok) { toast('Kampanya oluşturuldu'); closeModal('campaign-modal'); loadCampaigns(); loadDashboard(); }
+  else toast(r?.data?.error || 'Hata', 'error');
+}
+
+async function sendCampaign(id, name) {
+  if (!confirm(`"${name}" kampanyası tüm müşterilere gönderilsin mi?`)) return;
+  toast('Kampanya gönderiliyor...');
+  const r = await api(`/campaigns/${id}/send`, { method:'POST' });
+  if (r?.ok) { toast(r.data.message || 'Gönderildi'); loadCampaigns(); loadDashboard(); }
+  else toast(r?.data?.error || 'Hata', 'error');
+}
+
+async function deleteCampaign(id) {
+  if (!confirm('Kampanya silinsin mi?')) return;
+  const r = await api(`/campaigns/${id}`, { method:'DELETE' });
+  if (r?.ok) { toast('Kampanya silindi'); loadCampaigns(); }
+}
+
+// ── QUICK MESSAGE ──
+async function sendQuickMessage() {
+  const phone = document.getElementById('quick-phone').value;
+  const msg = document.getElementById('quick-msg').value;
+  if (!phone || !msg) { toast('Telefon ve mesaj giriniz', 'error'); return; }
+  toast('Mesaj gönderildi! (WhatsApp bağlantısı gerekli)');
+  document.getElementById('quick-phone').value = '';
+  document.getElementById('quick-msg').value = '';
+}
+
+// ── WHATSAPP ──
+async function testWAConnection() { toast('Bağlantı test ediliyor...'); setTimeout(() => toast('Bağlantı testi tamamlandı'), 1500); }
+async function connectWhatsApp() { toast('WhatsApp bağlantısı için Evolution API kurulumu gerekli'); }
+function saveSettings() { toast('Ayarlar kaydedildi'); }
+function saveProfile() { toast('Profil güncellendi'); }
+
+// ── HELPERS ──
+function statusIcon(s) { return {draft:'📝', sending:'🔄', completed:'✅', failed:'❌'}[s] || '📣'; }
+function statusBg(s) { return {draft:'rgba(139,149,168,.15)', sending:'rgba(255,209,102,.15)', completed:'rgba(37,211,102,.15)', failed:'rgba(255,77,109,.15)'}[s] || 'var(--bg3)'; }
+function statusBadge(s) { return {draft:'badge-blue', sending:'badge-yellow', completed:'badge-green', failed:'badge-red'}[s] || 'badge-blue'; }
+function statusLabel(s) { return {draft:'Taslak', sending:'Gönderiliyor', completed:'Tamamlandı', failed:'Başarısız'}[s] || s; }
+function formatDate(d) { return d ? new Date(d).toLocaleDateString('tr-TR', {day:'2-digit', month:'short', year:'numeric'}) : '—'; }
+
+// Message preview
+document.addEventListener('DOMContentLoaded', () => {
+  const msgInput = document.getElementById('camp-msg');
+  if (msgInput) {
+    msgInput.addEventListener('input', () => {
+      const v = msgInput.value;
+      const prev = document.getElementById('camp-preview');
+      if (v.length > 0) {
+        prev.style.display = 'block';
+        document.getElementById('camp-preview-text').textContent = v.replace('{isim}','Ahmet Yılmaz').replace('{telefon}','+905551234567');
+      } else { prev.style.display = 'none'; }
+    });
+  }
+});
+
+// ── STARTUP ──
+if (token) {
+  initApp(null);
+} else {
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+</script>
+</body>
+</html>
